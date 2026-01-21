@@ -1,14 +1,17 @@
 package entity;
+
 import java.time.LocalDateTime;
 
 public class Appointment {
-    private final long id;
-    private final long patientId;
-    private final long doctorId;
-    private final LocalDateTime startTime;
-    private final AppointmentStatus status;
+    private Long id;
+    private Long patientId;
+    private Long doctorId;
+    private LocalDateTime startTime;
+    private AppointmentStatus status;
 
-    public Appointment(long id, long patientId, long doctorId, LocalDateTime startTime, AppointmentStatus status) {
+    public Appointment() {}
+
+    public Appointment(Long id, Long patientId, Long doctorId, LocalDateTime startTime, AppointmentStatus status) {
         this.id = id;
         this.patientId = patientId;
         this.doctorId = doctorId;
@@ -16,11 +19,21 @@ public class Appointment {
         this.status = status;
     }
 
-    public long getId() { return id; }
-    public long getPatientId() { return patientId; }
-    public long getDoctorId() { return doctorId; }
+    public Appointment(Long patientId, Long doctorId, LocalDateTime startTime) {
+        this(null, patientId, doctorId, startTime, AppointmentStatus.BOOKED);
+    }
+
+    public Long getId() { return id; }
+    public Long getPatientId() { return patientId; }
+    public Long getDoctorId() { return doctorId; }
     public LocalDateTime getStartTime() { return startTime; }
     public AppointmentStatus getStatus() { return status; }
+
+    public void setId(Long id) { this.id = id; }
+    public void setPatientId(Long patientId) { this.patientId = patientId; }
+    public void setDoctorId(Long doctorId) { this.doctorId = doctorId; }
+    public void setStartTime(LocalDateTime startTime) { this.startTime = startTime; }
+    public void setStatus(AppointmentStatus status) { this.status = status; }
 
     @Override
     public String toString() {
