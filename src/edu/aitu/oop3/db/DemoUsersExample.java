@@ -1,5 +1,4 @@
 package edu.aitu.oop3.db;
-
 import edu.aitu.oop3.db.DatabaseConnection;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -55,4 +54,3 @@ public class DemoUsersExample {
         }
     }
 }
-

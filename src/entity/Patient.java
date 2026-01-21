@@ -1,32 +1,25 @@
 package entity;
 
 public class Patient {
-    private Long id;
-    private String fullName;
-    private String phone;
+    private final long id;
+    private final String name;
+    private final String email;
+    private final String phone;
 
-    public Patient() {}
-
-    public Patient(Long id, String fullName, String phone) {
+    public Patient(long id, String name, String email, String phone) {
         this.id = id;
-        this.fullName = fullName;
+        this.name = name;
+        this.email = email;
         this.phone = phone;
     }
 
-    public Patient(String fullName, String phone) {
-        this(null, fullName, phone);
-    }
-
-    public Long getId() { return id; }
-    public String getFullName() { return fullName; }
+    public long getId() { return id; }
+    public String getName() { return name; }
+    public String getEmail() { return email; }
     public String getPhone() { return phone; }
-
-    public void setId(Long id) { this.id = id; }
-    public void setFullName(String fullName) { this.fullName = fullName; }
-    public void setPhone(String phone) { this.phone = phone; }
 
     @Override
     public String toString() {
-        return "Patient{id=" + id + ", fullName='" + fullName + "', phone='" + phone + "'}";
+        return "Patient{id=" + id + ", name='" + name + "', email='" + email + "', phone='" + phone + "'}";
     }
 }
