@@ -6,7 +6,7 @@ public class Patient {
     private String email;
     private int phone;
 
-    public Patient(long id, String name, String email, int phone) {
+    public Patient(long id, String name, String email) {
         this.id = id;
         this.name = name;
         this.email = email;
@@ -17,9 +17,12 @@ public class Patient {
     public String getName() { return name; }
     public String getEmail() { return email; }
     public int getPhone() { return phone; }
+
     public void setId(int id) { this.id = id; }
-    public void setFullName(String fullName) { this.name = name; }
+    public void setName(String Name) { this.name = name; }
     public void setPhone(int phone) { this.phone = phone; }
+    public void setEmail(String email) { this.email = email; }
+
 
     @Override
     public String toString() {

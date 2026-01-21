@@ -8,7 +8,7 @@ public class Appointment {
     private final LocalDateTime startTime;
     private final AppointmentStatus status;
 
-    public Appointment(long id, long patientId, long doctorId, LocalDateTime startTime, AppointmentStatus status) {
+    public Appointment(long id, long patientId, long doctorId, LocalDateTime startTime, String status) {
         this.id = id;
         this.patientId = patientId;
         this.doctorId = doctorId;
