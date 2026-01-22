@@ -24,9 +24,10 @@ public class DatabaseConnection {
             throw new RuntimeException("Cannot load DB_PASSWORD from config.properties", e);
         }
     }
-    private DatabaseConnection() {
+    public DatabaseConnection() {
     }
     public static Connection getConnection() throws SQLException {
         return DriverManager.getConnection(URL, USER, PASSWORD);
     }
+
 }
