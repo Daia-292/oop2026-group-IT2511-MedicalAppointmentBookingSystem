@@ -6,7 +6,7 @@ public class Patient {
     private final String email;
     private final String phone;
 
-    public Patient(long id, String name, String email, String phone) {
+    public Patient(long id, String name, String email) {
         this.id = id;
         this.name = name;
         this.email = email;
