@@ -35,7 +35,7 @@ public class Main {
                 LocalDateTime.now().plusDays(1).withHour(10).withMinute(30)
         );
 
-        System.out.println("Booked appointment id = " + appt.getId());
+        System.out.println("Booked appointment id: " + appt.getId());
         System.out.println("Doctor schedule size = " + service.doctorSchedule(1).size());
     }
 }
