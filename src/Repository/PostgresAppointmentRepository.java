@@ -2,6 +2,7 @@ package Repository;
 
 import edu.aitu.oop3.db.DatabaseConnection;
 import entity.Appointment;
+import entity.AppointmentStatus;
 
 import java.sql.*;
 import java.time.LocalDateTime;
@@ -10,7 +11,6 @@ import java.util.List;
 import java.util.Optional;
 
 public class PostgresAppointmentRepository implements AppointmentRepository {
-
     private final DatabaseConnection db;
 
     public PostgresAppointmentRepository(DatabaseConnection db) {
@@ -21,7 +21,7 @@ public class PostgresAppointmentRepository implements AppointmentRepository {
     public Appointment createBooked(int patientId, int doctorId, LocalDateTime startAt, LocalDateTime endAt) {
         String sql = """
             INSERT INTO appointments (patient_id, doctor_id, start_at, end_at, status)
-            VALUES (?, ?, ?, ?, 'BOOKED')
+            VALUES (?, ?, ?, ?, ?)
             RETURNING id, created_at
             """;
 
@@ -32,18 +32,21 @@ public class PostgresAppointmentRepository implements AppointmentRepository {
             ps.setInt(2, doctorId);
             ps.setTimestamp(3, Timestamp.valueOf(startAt));
             ps.setTimestamp(4, Timestamp.valueOf(endAt));
-
+            ps.setString(5, AppointmentStatus.BOOKED.name());
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
                     return new Appointment(
-                            rs.getInt("id"),
-                            patientId,
-                            doctorId,
+                            rs.getLong("id"),
+                            (long) patientId,
+                            (long) doctorId,
                             startAt,
-                            "BOOKED");
+                            endAt,
+                            AppointmentStatus.BOOKED,
+                            rs.getTimestamp("created_at").toLocalDateTime()
+                    );
                 }
             }
-            throw new RuntimeException("Не удалось создать appointment");
+            throw new RuntimeException("Failed to create appointment");
 
         } catch (SQLException e) {
             throw new RuntimeException(e);
@@ -109,7 +112,7 @@ public class PostgresAppointmentRepository implements AppointmentRepository {
             SELECT id, patient_id, doctor_id, start_at, end_at, status, created_at
             FROM appointments
             WHERE patient_id = ?
-              AND status = 'BOOKED'
+              AND status = ?
               AND start_at >= now()
             ORDER BY start_at
             """;
@@ -120,6 +123,7 @@ public class PostgresAppointmentRepository implements AppointmentRepository {
              PreparedStatement ps = c.prepareStatement(sql)) {
 
             ps.setInt(1, patientId);
+            ps.setString(2, AppointmentStatus.BOOKED.name());
 
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
@@ -135,12 +139,11 @@ public class PostgresAppointmentRepository implements AppointmentRepository {
 
     @Override
     public boolean hasOverlapBooked(int doctorId, LocalDateTime startAt, LocalDateTime endAt) {
-        // Overlap logic: existing.start < new.end AND existing.end > new.start
         String sql = """
             SELECT 1
             FROM appointments
             WHERE doctor_id = ?
-              AND status = 'BOOKED'
+              AND status = ?
               AND start_at < ?
               AND end_at > ?
             LIMIT 1
@@ -150,8 +153,9 @@ public class PostgresAppointmentRepository implements AppointmentRepository {
              PreparedStatement ps = c.prepareStatement(sql)) {
 
             ps.setInt(1, doctorId);
-            ps.setTimestamp(2, Timestamp.valueOf(endAt));
-            ps.setTimestamp(3, Timestamp.valueOf(startAt));
+            ps.setString(2, AppointmentStatus.BOOKED.name());
+            ps.setTimestamp(3, Timestamp.valueOf(endAt));
+            ps.setTimestamp(4, Timestamp.valueOf(startAt));
 
             try (ResultSet rs = ps.executeQuery()) {
                 return rs.next();
@@ -164,12 +168,13 @@ public class PostgresAppointmentRepository implements AppointmentRepository {
 
     @Override
     public void cancel(int appointmentId) {
-        String sql = "UPDATE appointments SET status = 'CANCELED' WHERE id = ?";
+        String sql = "UPDATE appointments SET status = ? WHERE id = ?";
 
         try (Connection c = db.getConnection();
              PreparedStatement ps = c.prepareStatement(sql)) {
 
-            ps.setInt(1, appointmentId);
+            ps.setString(1, AppointmentStatus.CANCELED.name());
+            ps.setInt(2, appointmentId);
             ps.executeUpdate();
 
         } catch (SQLException e) {
@@ -177,13 +182,17 @@ public class PostgresAppointmentRepository implements AppointmentRepository {
         }
     }
 
+
+
     private Appointment mapRow(ResultSet rs) throws SQLException {
         return new Appointment(
-                rs.getInt("id"),
-                rs.getInt("patient_id"),
-                rs.getInt("doctor_id"),
+                rs.getLong("id"),
+                rs.getLong("patient_id"),
+                rs.getLong("doctor_id"),
                 rs.getTimestamp("start_at").toLocalDateTime(),
-                rs.getString("status")
+                rs.getTimestamp("end_at").toLocalDateTime(),
+                AppointmentStatus.valueOf(rs.getString("status").toUpperCase()),
+                rs.getTimestamp("created_at").toLocalDateTime()
         );
     }
 }
