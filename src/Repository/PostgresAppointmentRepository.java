@@ -182,6 +182,8 @@ public class PostgresAppointmentRepository implements AppointmentRepository {
         }
     }
 
+
+
     private Appointment mapRow(ResultSet rs) throws SQLException {
         return new Appointment(
                 rs.getLong("id"),
