@@ -167,14 +167,14 @@ public class PostgresAppointmentRepository implements AppointmentRepository {
     }
 
     @Override
-    public void cancel(int appointmentId) {
+    public void cancel(int id) {
         String sql = "UPDATE appointments SET status = ? WHERE id = ?";
 
         try (Connection c = db.getConnection();
              PreparedStatement ps = c.prepareStatement(sql)) {
 
             ps.setString(1, AppointmentStatus.CANCELED.name());
-            ps.setInt(2, appointmentId);
+            ps.setInt(2, id);
             ps.executeUpdate();
 
         } catch (SQLException e) {

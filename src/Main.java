@@ -1,6 +1,13 @@
 import Business.AppointmentService;
+import Business.DoctorAvailabilityService;
+import Repository.PostgresDoctorRepository;
 import edu.aitu.oop3.db.DatabaseConnection;
 import Repository.PostgresAppointmentRepository;
+import edu.aitu.oop3.db.DatabaseConnectionAdapter;
+import edu.aitu.oop3.db.IDB;
+import entity.Doctor;
+import org.checkerframework.checker.units.qual.A;
+
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -28,14 +35,20 @@ public class Main {
         var db = new DatabaseConnection();
         var repo = new PostgresAppointmentRepository(db);
         var service = new AppointmentService(repo);
-
         var appt = service.book(
-                1, 1,
+                19, 8,
                 LocalDateTime.now().plusDays(1).withHour(10).withMinute(0),
                 LocalDateTime.now().plusDays(1).withHour(10).withMinute(30)
         );
-
         System.out.println("Booked appointment id: " + appt.getId());
         System.out.println("Doctor schedule size = " + service.doctorSchedule(1).size());
+
+
+//        var service = new AppointmentService(repo);
+//        service.patientUpcoming(14);
+//        System.out.println("Upcoming paients: " + service.patientUpcoming(14).size());
+
+        // add interface for users
+
     }
 }

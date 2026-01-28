@@ -18,7 +18,6 @@ public class AppointmentService {
         this.repo = repo;
     }
 
-    // user flow: book appointment
     public Appointment book(int patientId, int doctorId, LocalDateTime startAt, LocalDateTime endAt) {
         if (patientId <= 0 || doctorId <= 0) {
             throw new IllegalArgumentException("patientId/doctorId must be positive");
@@ -39,15 +38,15 @@ public class AppointmentService {
     }
 
     // user flow: cancel appointment
-    public void cancel(int appointmentId) {
-        Appointment appt = repo.findById(appointmentId)
-                .orElseThrow(() -> new AppointmentNotFoundException("Appointment not found: " + appointmentId));
+    public void cancel(int id) {
+        Appointment appt = repo.findById(id)
+                .orElseThrow(() -> new AppointmentNotFoundException("Appointment not found: " + id));
 
         if (!"BOOKED".equals(appt.getStatus())) {
             throw new IllegalStateException("Only BOOKED appointment can be canceled");
         }
 
-        repo.cancel(appointmentId);
+        repo.cancel(id);
     }
 
     // user flow: view doctor's schedule
