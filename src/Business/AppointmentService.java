@@ -3,7 +3,7 @@ package Business;
 import Exceptions.AppointmentNotFoundException;
 import Exceptions.DoctorUnavailableException;
 import Exceptions.TimeSlotAlreadyBookedException;
-import Repository.AppointmentRepository;
+import repository.AppointmentRepository;
 
 import entity.Appointment;
 

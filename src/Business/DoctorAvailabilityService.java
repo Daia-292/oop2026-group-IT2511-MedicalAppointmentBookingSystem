@@ -2,8 +2,8 @@ package Business;
 
 import Exceptions.DoctorUnavailableException;
 import Exceptions.TimeSlotAlreadyBookedException;
-import Repository.AppointmentRepository;
-import Repository.DoctorRepository;
+import repository.AppointmentRepository;
+import repository.DoctorRepository;
 
 import java.time.LocalDateTime;
 

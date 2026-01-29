@@ -1,4 +1,4 @@
-package Repository;
+package repository;
 
 import edu.aitu.oop3.db.DatabaseConnection;
 import entity.Patient;
