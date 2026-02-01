@@ -1,3 +1,11 @@
-config.properties
+# IntelliJ
 .idea/
+*.iml
+
+# Build folders
+out/
+target/
+
+# Secrets
+config.properties
 
