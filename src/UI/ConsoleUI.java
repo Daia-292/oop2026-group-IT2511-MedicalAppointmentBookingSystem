@@ -29,6 +29,7 @@ public class ConsoleUI {
                     case 5 -> handlePatientUpcoming(sc);
                     case 0 -> { return; }
                     default -> System.out.println("Unknown option. Try again.");
+
                 }
 
                 System.out.println();
@@ -85,7 +86,8 @@ public class ConsoleUI {
                 String note = readLine(sc, "note (optional): ");
                 created = service.bookFollowUp(patientId, doctorId, startAt, endAt, (int) prevId, note);
             } else {
-                System.out.println("Invalid type.");
+                System.out.println("Invalid type");
+                System.out.println(".");
                 return;
             }
 
