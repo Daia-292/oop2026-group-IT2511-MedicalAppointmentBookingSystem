@@ -74,8 +74,7 @@ public class ConsoleUI {
 
             if (t == 1) {
                 String link = readNonBlank(sc, "meetingLink: ");
-                // If you have: service.bookOnline(...), call that.
-                // Otherwise create entity + service.save/create.
+
                 created = service.bookOnline(patientId, doctorId, startAt, endAt, link);
             } else if (t == 2) {
                 String room = readNonBlank(sc, "room: ");

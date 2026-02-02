@@ -22,6 +22,8 @@ public class AppointmentService {
         this.repo = repo;
     }
 
+
+
     public Appointment book(int patientId, int doctorId, LocalDateTime startAt, LocalDateTime endAt) {
         if (patientId <= 0 || doctorId <= 0) {
             throw new IllegalArgumentException("patientId/doctorId must be positive");
@@ -55,64 +57,71 @@ public class AppointmentService {
     public Appointment bookOnline(int patientId, int doctorId,
                                   LocalDateTime startAt, LocalDateTime endAt,
                                   String meetingLink) {
+
+        book(patientId, doctorId, startAt, endAt);
+
         if (meetingLink == null || meetingLink.isBlank()) {
             throw new IllegalArgumentException("meetingLink must not be blank");
         }
 
-        Appointment appt = new OnlineAppointment(
-                0, patientId, doctorId,
-                startAt, endAt,
-                AppointmentStatus.BOOKED,
-                LocalDateTime.now(),
-                meetingLink
-        );
+        if (repo.hasOverlapBooked(doctorId, startAt, endAt)) {
+            throw new TimeSlotAlreadyBookedException("This time slot is already booked");
+        }
 
-        // NOTE: if repo.create(appt) doesn't exist yet, add it to AppointmentRepository
-        // and implement in PostgresAppointmentRepository, or replace with an existing repo method.
+        Appointment appt = AppointmentFactory.newOnline(patientId, doctorId, startAt, endAt, meetingLink);
         return repo.create(appt);
     }
+
 
     public Appointment bookInPerson(int patientId, int doctorId,
                                     LocalDateTime startAt, LocalDateTime endAt,
                                     String room) {
+
+        book(patientId, doctorId, startAt, endAt);
+
         if (room == null || room.isBlank()) {
             throw new IllegalArgumentException("room must not be blank");
         }
 
-        Appointment appt = new InPersonAppointment(
-                0, patientId, doctorId,
-                startAt, endAt,
-                AppointmentStatus.BOOKED,
-                LocalDateTime.now(),
-                room
+        if (repo.hasOverlapBooked(doctorId, startAt, endAt)) {
+            throw new TimeSlotAlreadyBookedException("This time slot is already booked");
+        }
+
+        Appointment appt = AppointmentFactory.newInPerson(
+                patientId, doctorId, startAt, endAt, room
         );
+
         return repo.create(appt);
     }
 
+
     public Appointment bookFollowUp(int patientId, int doctorId,
                                     LocalDateTime startAt, LocalDateTime endAt,
-                                    int previousAppointmentId, String note) {
+                                    int previousAppointmentId,
+                                    String note) {
+
+        book(patientId, doctorId, startAt, endAt);
+
         if (previousAppointmentId <= 0) {
             throw new IllegalArgumentException("previousAppointmentId must be positive");
         }
 
-        Appointment appt = new FollowUpAppointment(
-                0, patientId, doctorId,
-                startAt, endAt,
-                AppointmentStatus.BOOKED,
-                LocalDateTime.now(),
-                previousAppointmentId,
-                note
+        if (repo.hasOverlapBooked(doctorId, startAt, endAt)) {
+            throw new TimeSlotAlreadyBookedException("This time slot is already booked");
+        }
+
+        Appointment appt = AppointmentFactory.newFollowUp(
+                patientId, doctorId, startAt, endAt, previousAppointmentId, note
         );
+
         return repo.create(appt);
     }
 
-    // user flow: view doctor's schedule
+
     public List<Appointment> doctorSchedule(int doctorId) {
         return repo.findByDoctor(doctorId);
     }
 
-    // user flow: view patient's upcoming visits
     public List<Appointment> patientUpcoming(int patientId) {
         return repo.findUpcomingByPatient(patientId);
     }

@@ -7,7 +7,6 @@ import java.time.LocalDateTime;
 public final class AppointmentFactory {
     private AppointmentFactory() {}
 
-    // For "new booking" before DB insert, we usually have id=0 and createdAt=now.
     private static long newId() { return 0L; }
 
     public static OnlineAppointment newOnline(long patientId, long doctorId,
