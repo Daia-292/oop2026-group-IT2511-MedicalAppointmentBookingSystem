@@ -105,5 +105,9 @@ public class AppointmentSummary {
             }
             return new AppointmentSummary(this);
         }
+
+        public Builder extra(String s) {
+            return this;
+        }
     }
 }

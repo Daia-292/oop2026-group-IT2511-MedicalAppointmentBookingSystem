@@ -8,6 +8,9 @@ import entity.BasicAppointment;
 import entity.FollowUpAppointment;
 import entity.InPersonAppointment;
 import entity.OnlineAppointment;
+import dto.Page;
+import entity.Appointment;
+import java.util.ArrayList;
 
 import java.sql.*;
 import java.time.LocalDateTime;
@@ -234,6 +237,54 @@ public class PostgresAppointmentRepository implements AppointmentRepository {
             throw new RuntimeException(e);
         }
     }
+    @Override
+    public Page<Appointment> findByDoctorPaged(int doctorId, int page, int size) {
+        if (page < 0 || size <= 0) throw new IllegalArgumentException("Invalid page/size");
+
+        long total;
+        String countSql = "SELECT COUNT(*) FROM appointments WHERE doctor_id = ?";
+
+        String dataSql = """
+            SELECT id, patient_id, doctor_id, start_at, end_at, status, created_at
+            FROM appointments
+            WHERE doctor_id = ?
+            ORDER BY start_at
+            LIMIT ? OFFSET ?
+            """;
+
+        try (var c = DatabaseConnection.getConnection()) {
+
+            // 1) total count
+            try (var ps = c.prepareStatement(countSql)) {
+                ps.setInt(1, doctorId);
+                try (var rs = ps.executeQuery()) {
+                    rs.next();
+                    total = rs.getLong(1);
+                }
+            }
+
+            // 2) page data
+            var items = new ArrayList<Appointment>();
+            try (var ps = c.prepareStatement(dataSql)) {
+                ps.setInt(1, doctorId);
+                ps.setInt(2, size);
+                ps.setInt(3, page * size);
+
+                try (var rs = ps.executeQuery()) {
+                    while (rs.next()) {
+                        Appointment a = mapRow(rs);
+                        items.add(a);
+                    }
+                }
+            }
+
+            return new Page<>(items, page, size, total);
+
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to load paged schedule", e);
+        }
+    }
+
 
     private Appointment mapRow(ResultSet rs) throws SQLException {
         long id = rs.getLong("id");

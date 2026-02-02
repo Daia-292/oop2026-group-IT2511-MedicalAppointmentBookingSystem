@@ -1,7 +1,6 @@
 package dto;
 
-import entity.AppointmentStatus;
-import entity.AppointmentType;
+import entity.*;
 
 import java.time.LocalDateTime;
 

@@ -23,9 +23,9 @@ public class ConsoleUI {
 
                 switch (choice) {
                     case 1 -> handleBookBasic(sc);
-                    case 2 -> handleBookTyped(sc);     // NEW
+                    case 2 -> handleBookTyped(sc);
                     case 3 -> handleCancel(sc);
-                    case 4 -> handleDoctorSchedule(sc);
+                    case 4 -> handleDoctorSchedulePaged(sc,service);
                     case 5 -> handlePatientUpcoming(sc);
                     case 0 -> { return; }
                     default -> System.out.println("Unknown option. Try again.");
@@ -41,7 +41,7 @@ public class ConsoleUI {
         System.out.println("1) Book appointment (basic)");
         System.out.println("2) Book appointment (ONLINE / IN_PERSON / FOLLOW_UP)"); // NEW
         System.out.println("3) Cancel appointment");
-        System.out.println("4) View doctor's schedule");
+        System.out.println("4) View doctor's schedule (paged)");
         System.out.println("5) View patient's upcoming appointments");
         System.out.println("0) Exit");
     }
@@ -51,13 +51,14 @@ public class ConsoleUI {
         int doctorId = readInt(sc, "Doctor ID: ");
         LocalDateTime startAt = readDateTime(sc, "Start (yyyy-MM-ddTHH:mm:ss): ");
         LocalDateTime endAt = readDateTime(sc, "End   (yyyy-MM-ddTHH:mm:ss): ");
+        var res = service.bookSafe(patientId, doctorId, startAt, endAt);
 
-        try {
-            var appt = service.book(patientId, doctorId, startAt, endAt);
-            System.out.println("Booked appointment id: " + appt.getId());
-        } catch (RuntimeException ex) {
-            System.out.println("Booking failed: " + ex.getMessage());
+        if (res.isSuccess()) {
+            System.out.println("Booked appointment id: " + res.getData().getId());
+        } else {
+            System.out.println("Booking failed: " + res.getMessage());
         }
+
     }
 
     private void handleBookTyped(Scanner sc) {
@@ -104,19 +105,29 @@ public class ConsoleUI {
         }
     }
 
-    private void handleDoctorSchedule(Scanner sc) {
+    private static void handleDoctorSchedulePaged(Scanner sc, AppointmentService service) {
         int doctorId = readInt(sc, "Doctor ID: ");
+        int page = readInt(sc, "Page (0,1,2...): ");
+        int size = readInt(sc, "Size (e.g. 5,10): ");
+
         try {
-            List<Appointment> list = service.doctorSchedule(doctorId);
-            if (list.isEmpty()) {
-                System.out.println("No appointments found for doctor " + doctorId);
+            var p = service.doctorSchedulePaged(doctorId, page, size);
+            System.out.println("Total appointments = " + p.getTotal());
+            System.out.println("Showing page " + p.getPage() + " size " + p.getSize());
+
+            if (p.getItems().isEmpty()) {
+                System.out.println("No data on this page.");
                 return;
             }
-            for (Appointment a : list) System.out.println(formatAppointment(a));
+
+            for (Appointment a : p.getItems()) {
+                System.out.println(formatAppointment(a));
+            }
         } catch (RuntimeException ex) {
-            System.out.println("Failed to load schedule: " + ex.getMessage());
+            System.out.println("Failed: " + ex.getMessage());
         }
     }
+
 
     private void handlePatientUpcoming(Scanner sc) {
         int patientId = readInt(sc, "Patient ID: ");
@@ -132,7 +143,7 @@ public class ConsoleUI {
         }
     }
 
-    private String formatAppointment(Appointment a) {
+    private static String formatAppointment(Appointment a) {
         String base = "id=" + a.getId()
                 + ", type=" + a.getType()
                 + ", patientId=" + a.getPatientId()
@@ -147,7 +158,7 @@ public class ConsoleUI {
         return base;
     }
 
-    private int readInt(Scanner sc, String prompt) {
+    private static int readInt(Scanner sc, String prompt) {
         while (true) {
             System.out.print(prompt);
             String s = sc.nextLine().trim();

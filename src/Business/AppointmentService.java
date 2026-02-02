@@ -3,6 +3,8 @@ package Business;
 import Exceptions.AppointmentNotFoundException;
 import Exceptions.DoctorUnavailableException;
 import Exceptions.TimeSlotAlreadyBookedException;
+import config.WorkingHoursProvider;
+import dto.Result;
 import repository.AppointmentRepository;
 
 import entity.Appointment;
@@ -10,6 +12,7 @@ import entity.AppointmentStatus;
 import entity.FollowUpAppointment;
 import entity.InPersonAppointment;
 import entity.OnlineAppointment;
+import dto.Page;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -17,12 +20,34 @@ import java.util.List;
 public class AppointmentService {
 
     private final AppointmentRepository repo;
+    private final WorkingHoursProvider workingHours;
 
     public AppointmentService(AppointmentRepository repo) {
         this.repo = repo;
+        this.workingHours = WorkingHoursProvider.getInstance();
     }
 
+    public AppointmentSummary toSummary(Appointment a) {
+        return AppointmentSummary.builder()
+                .patientId(a.getPatientId())
+                .doctorId(a.getDoctorId())
+                .startTime(a.getStartTime())
+                .endTime(a.getEndTime())
+                .status(a.getStatus())
+                .type(a.getType())
+                .extra(extractExtra(a))
+                .build();
+    }
+    private String extractExtra(Appointment a) {
+        if (a instanceof OnlineAppointment oa) return oa.getMeetingLink();
+        if (a instanceof InPersonAppointment ip) return ip.getRoom();
+        if (a instanceof FollowUpAppointment fu) return fu.getNote();
+        return "";
+    }
 
+    public Page<Appointment> doctorSchedulePaged(int doctorId, int page, int size) {
+        return repo.findByDoctorPaged(doctorId, page, size);
+    }
 
     public Appointment book(int patientId, int doctorId, LocalDateTime startAt, LocalDateTime endAt) {
         if (patientId <= 0 || doctorId <= 0) {
@@ -34,7 +59,16 @@ public class AppointmentService {
         if (startAt.isBefore(LocalDateTime.now())) {
             throw new DoctorUnavailableException("Cannot book appointment in the past");
         }
+        boolean withinHours = workingHours.isWithin(
+                startAt.toLocalTime(),
+                endAt.toLocalTime()
+        );
 
+        if (!withinHours) {
+            throw new DoctorUnavailableException(
+                    "Appointment must be within clinic working hours (09:00–18:00)"
+            );
+        }
         boolean overlap = repo.hasOverlapBooked(doctorId, startAt, endAt);
         if (overlap) {
             throw new TimeSlotAlreadyBookedException("This time slot is already booked");
@@ -117,6 +151,14 @@ public class AppointmentService {
         return repo.create(appt);
     }
 
+    public Result<Appointment> bookSafe(int patientId, int doctorId,
+                                        LocalDateTime startAt, LocalDateTime endAt) {
+        try {
+            return Result.ok(book(patientId, doctorId, startAt, endAt));
+        } catch (RuntimeException ex) {
+            return Result.fail(ex.getMessage());
+        }
+    }
 
     public List<Appointment> doctorSchedule(int doctorId) {
         return repo.findByDoctor(doctorId);
