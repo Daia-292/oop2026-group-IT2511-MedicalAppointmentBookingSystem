@@ -6,6 +6,10 @@ import Exceptions.TimeSlotAlreadyBookedException;
 import repository.AppointmentRepository;
 
 import entity.Appointment;
+import entity.AppointmentStatus;
+import entity.FollowUpAppointment;
+import entity.InPersonAppointment;
+import entity.OnlineAppointment;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -37,16 +41,70 @@ public class AppointmentService {
         return repo.createBooked(patientId, doctorId, startAt, endAt);
     }
 
-    // user flow: cancel appointment
     public void cancel(int id) {
         Appointment appt = repo.findById(id)
                 .orElseThrow(() -> new AppointmentNotFoundException("Appointment not found: " + id));
 
-        if (!"BOOKED".equals(appt.getStatus())) {
+        if (appt.getStatus() != AppointmentStatus.BOOKED) {
             throw new IllegalStateException("Only BOOKED appointment can be canceled");
         }
 
         repo.cancel(id);
+    }
+
+    public Appointment bookOnline(int patientId, int doctorId,
+                                  LocalDateTime startAt, LocalDateTime endAt,
+                                  String meetingLink) {
+        if (meetingLink == null || meetingLink.isBlank()) {
+            throw new IllegalArgumentException("meetingLink must not be blank");
+        }
+
+        Appointment appt = new OnlineAppointment(
+                0, patientId, doctorId,
+                startAt, endAt,
+                AppointmentStatus.BOOKED,
+                LocalDateTime.now(),
+                meetingLink
+        );
+
+        // NOTE: if repo.create(appt) doesn't exist yet, add it to AppointmentRepository
+        // and implement in PostgresAppointmentRepository, or replace with an existing repo method.
+        return repo.create(appt);
+    }
+
+    public Appointment bookInPerson(int patientId, int doctorId,
+                                    LocalDateTime startAt, LocalDateTime endAt,
+                                    String room) {
+        if (room == null || room.isBlank()) {
+            throw new IllegalArgumentException("room must not be blank");
+        }
+
+        Appointment appt = new InPersonAppointment(
+                0, patientId, doctorId,
+                startAt, endAt,
+                AppointmentStatus.BOOKED,
+                LocalDateTime.now(),
+                room
+        );
+        return repo.create(appt);
+    }
+
+    public Appointment bookFollowUp(int patientId, int doctorId,
+                                    LocalDateTime startAt, LocalDateTime endAt,
+                                    int previousAppointmentId, String note) {
+        if (previousAppointmentId <= 0) {
+            throw new IllegalArgumentException("previousAppointmentId must be positive");
+        }
+
+        Appointment appt = new FollowUpAppointment(
+                0, patientId, doctorId,
+                startAt, endAt,
+                AppointmentStatus.BOOKED,
+                LocalDateTime.now(),
+                previousAppointmentId,
+                note
+        );
+        return repo.create(appt);
     }
 
     // user flow: view doctor's schedule

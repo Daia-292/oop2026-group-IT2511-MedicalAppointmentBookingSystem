@@ -1,7 +1,7 @@
 package entity;
 import java.time.LocalDateTime;
 
-public class Appointment {
+public abstract class  Appointment {
     private final long id;
     private final long patientId;
     private final long doctorId;
@@ -32,16 +32,11 @@ public class Appointment {
     public LocalDateTime getEndTime() { return endTime; }
     public LocalDateTime getCreatedAt() { return createdAt; }
 
-
-
-    public long setId() { return id; }
-    public long setPatientId() { return patientId; }
-    public long setDoctorId() { return doctorId; }
-    public LocalDateTime setStartTime() { return startTime; }
     public void setEndTime(LocalDateTime endTime) { this.endTime = endTime; }
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
     public void setStatus(AppointmentStatus status) { this.status = status; }
 
+    public abstract AppointmentType getType();
 
 
     @Override

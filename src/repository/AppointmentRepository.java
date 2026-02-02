@@ -8,6 +8,9 @@ import java.util.Optional;
 
 public interface AppointmentRepository {
     Appointment createBooked(int patientId, int doctorId, LocalDateTime startAt, LocalDateTime endAt);
+
+    Appointment create(Appointment appt);
+
     Optional<Appointment> findById(int id);
 
     List<Appointment> findByDoctor(int doctorId);
