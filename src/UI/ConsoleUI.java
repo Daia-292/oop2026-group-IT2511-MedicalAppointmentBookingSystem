@@ -1,7 +1,7 @@
 package UI;
 
 import Business.AppointmentService;
-import entity.*;
+import Domain.entity.*;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;

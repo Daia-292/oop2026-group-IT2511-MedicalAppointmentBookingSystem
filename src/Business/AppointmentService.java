@@ -1,18 +1,19 @@
 package Business;
 
-import Exceptions.AppointmentNotFoundException;
-import Exceptions.DoctorUnavailableException;
-import Exceptions.TimeSlotAlreadyBookedException;
-import config.WorkingHoursProvider;
-import dto.Result;
-import repository.AppointmentRepository;
-
-import entity.Appointment;
-import entity.AppointmentStatus;
-import entity.FollowUpAppointment;
-import entity.InPersonAppointment;
-import entity.OnlineAppointment;
-import dto.Page;
+import Domain.factory.AppointmentFactory;
+import Reporting.dto.AppointmentSummary;
+import Business.Exceptions.AppointmentNotFoundException;
+import Business.Exceptions.DoctorUnavailableException;
+import Business.Exceptions.TimeSlotAlreadyBookedException;
+import Domain.config.WorkingHoursProvider;
+import Reporting.dto.Result;
+import Domain.repository.AppointmentRepository;
+import Domain.entity.Appointment;
+import Domain.entity.AppointmentStatus;
+import Domain.entity.FollowUpAppointment;
+import Domain.entity.InPersonAppointment;
+import Domain.entity.OnlineAppointment;
+import Reporting.dto.Page;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -158,8 +159,8 @@ public class AppointmentService {
         } catch (RuntimeException ex) {
             return Result.fail(ex.getMessage());
         }
-    }
 
+    }
     public List<Appointment> doctorSchedule(int doctorId) {
         return repo.findByDoctor(doctorId);
     }
